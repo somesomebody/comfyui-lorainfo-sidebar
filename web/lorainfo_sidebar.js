@@ -125,17 +125,20 @@ class LoRAInfo_SideBar {
         });
         return this.galleryContainer;
     }
-
+// document.getElementsByClassName("preview-container")[0].dataset["index"]
     loadLoraGallery() {
         this.galleryContainer.innerHTML = "";
         this.controlPanel.querySelector('.search-input').value = "";
 
         this.getLoraList().then(data => {
-            data.forEach(filename => {
-                this.getLoraPreview(filename).then(preview_data => {
+            const previewPromises = data.map(({index, filename}) => {
+                return this.getLoraPreview(filename).then(preview_data => {
                     const previewConainer = $el("div.preview-container", {
                         draggable: false,
-                        id: filename
+                        id: filename,
+                        dataset: {
+                            "index": index
+                        }
                     });
 
                     const infoButton = $el("button.info-button", {
@@ -157,12 +160,25 @@ class LoRAInfo_SideBar {
                     ]);
 
                     previewConainer.appendChild(previewTextContainer);
-
                     this.galleryContainer.appendChild(previewConainer);
                 });
-            })
+            });
+
+            Promise.all(previewPromises).then(() => {
+                const children = Array.from(this.galleryContainer.children);
+
+                children.sort((a, b) => {
+                    const aIndex = parseInt(a.dataset.index || "0", 10);
+                    const bIndex = parseInt(b.dataset.index || "0", 10);
+                    return aIndex - bIndex;
+                });
+
+                this.galleryContainer.innerHTML = "";
+                children.forEach(child => this.galleryContainer.appendChild(child));
+            });
         });
     }
+
 
     async getLoraList() {
         try {
@@ -171,7 +187,7 @@ class LoRAInfo_SideBar {
                 let result = []
                 const data = await response.json();
                 data.forEach(item => {
-                    result.push(item["filename"].split(".")[0]);
+                    result.push({"index": item["index"], "filename": item["filename"].split(".")[0]});
                 })
                 return result;
             }

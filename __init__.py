@@ -4,18 +4,18 @@ from aiohttp import web
 from server import PromptServer
 import folder_paths
 
-LORA_FILE_INFO = {}
-
 @PromptServer.instance.routes.get("/lorainfo_sidebar/get_lora_list")
 async def get_lora_list(request):
     lora_files = []
 
+    lora_file_index = 1
     lora_folder_paths = folder_paths.get_folder_paths("loras")
-
     for lora_folder_path in lora_folder_paths:
         lora_folder_abspath = os.path.realpath(lora_folder_path)
         if os.path.exists(lora_folder_abspath):
             for root, dirs, files in os.walk(lora_folder_abspath, followlinks=True):
+                files.sort()
+
                 for filename in files:
                     if filename.startswith('.') or filename.startswith('._'):
                         continue
@@ -23,8 +23,8 @@ async def get_lora_list(request):
                     file_path = os.path.join(root, filename)
                     file_abspath = os.path.realpath(file_path)
                     if os.path.isfile(file_abspath) and filename.lower().endswith(('.safetensors', '.ckpt', '.pt')):
-                        lora_files.append({"filename": filename})
-                        LORA_FILE_INFO[os.path.splitext(filename)[0].strip()] = {"filename": filename}
+                        lora_files.append({"index": lora_file_index, "filename": filename})
+                        lora_file_index = lora_file_index + 1
 
     return web.json_response(lora_files)
 

@@ -3,7 +3,7 @@
 ![Preview](readme_img/01.png)
 
 ## Description 
-**LoRA Info SideBar** allows you to preview image of LoRA Files and edit JSON
+**LoRA Info Sidebar** allows you to preview images of LoRA files and edit their associated JSON files
 
 ## Installation
 1. Goto `ComfyUI/custom_nodes` in terminal 
@@ -11,8 +11,8 @@
 3. Restart the ComfyUI
 
 ## Usage
-- This extension finds `.safetensors / .ckpt / .pt` files in `models/loras`
-- Filename of JSON and preview iamge is same to LoRA file
-- You can add a preview image in the same directory where the LoRA file is placed JSON file 
-- Editing JSON file like below
+- This extension scans the `models/loras` folder for `.safetensors`, `.ckpt`, and `.pt` files.
+- The JSON and preview image filenames must match the LoRA file's name.
+- You can add a preview image and a JSON file in the same directory as the LoRA file.
+- You can edit the JSON file like this:
 ![Preview](readme_img/02.png)

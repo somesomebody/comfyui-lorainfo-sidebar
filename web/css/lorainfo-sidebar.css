@@ -1,0 +1,223 @@
+.sidebar-content-container::-webkit-scrollbar {
+    width: 8px; 
+}
+  
+.sidebar-content-container::-webkit-scrollbar-track {
+    background: #dfdfdf; 
+    border-radius: 10px;
+}
+  
+.sidebar-content-container::-webkit-scrollbar-thumb {
+    background: #a7a6a6; 
+    border-radius: 10px;
+}
+  
+.sidebar-content-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.lorainfo-title {
+    font-family: 'Roboto', 'Noto Sans', 'Helvetica Neue', sans-serif;
+    font-size: 30px;
+    font-weight: bold;
+    margin: 30px 0px 30px 20px;
+}
+
+.control-panel-container {
+    margin: 0px 0px 20px 20px;
+}
+
+.search-input {
+    margin: 0px 20px 0px 0px;
+    width: 300px;
+    height: 25px;
+}
+
+.control-panel-container > button {
+    margin: 0px 20px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    width: 25px;
+    height: 25px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Roboto', 'Noto Sans', 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+.lora-gallery-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0px 0px 0px 20px;
+}
+  
+.preview-container {
+    flex: 0 0 auto; 
+    margin: 5px;
+    border: #ccc 2px solid;
+    border-radius: 8px;
+    position: relative;
+    background-color: #e6e6e6;
+}
+
+.info-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.preview-image {
+    display: block;
+    border-radius: 8px;
+}
+
+.preview-text-container {
+    background-color: #e6e6e6;
+    width: 200px; 
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+.preview-text-container::-webkit-scrollbar {
+    height: 5px; 
+}
+
+.preview-text-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.preview-text {
+    background-color: #e6e6e6;
+    color: #272727;
+    font-family: 'Roboto', 'Noto Sans', 'Helvetica Neue', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 10px 3px 10px;
+}
+
+.info-button {
+    font-weight: bold;
+}
+
+.lorainfo-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.lorainfo-sidebar-modal {
+    font-family: 'Roboto', 'Noto Sans', 'Helvetica Neue', sans-serif;
+    background-color: rgb(128, 128, 128);
+    padding: 20px;
+    border: #505050 5px solid;
+    border-radius: 8px;
+    z-index: 1001; 
+    position: relative;
+    top: 100px;
+    left: 100px;
+    width: 700px;
+    height: 85%;
+    overflow-y: auto;
+}
+
+.lorainfo-sidebar-modal::-webkit-scrollbar {
+    width: 8px; 
+}
+  
+.lorainfo-sidebar-modal::-webkit-scrollbar-track {
+    background: #dfdfdf; 
+    border-radius: 10px;
+}
+  
+.lorainfo-sidebar-modal::-webkit-scrollbar-thumb {
+    background: #a7a6a6; 
+    border-radius: 10px;
+}
+  
+.lorainfo-sidebar-modal::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.lorainfo-sidebar-modal-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.lorainfo-sidebar-modal-close {
+    margin-left: auto;
+    width: 50px;
+    height: 50px;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.lorainfo-sidebar-modal-close:hover {
+    background-color: #494949;
+    border: #494949 2px solid;
+}
+
+.lorainfo-sidebar-modal-content {
+    display: flex;
+    align-items: center;
+    margin: 10px 0px 10px 0px;
+}
+
+.lorainfo-sidebar-modal-content-key {
+    width: 120px;
+    height: 50px;
+    flex-shrink: 0;
+    margin: 0px 10px 0px 0px;
+}
+
+.lorainfo-sidebar-modal-content-value {
+    flex: 1;
+    height: 50px;
+}
+
+.lorainfo-sidebar-modal-delete-content {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    margin: 0px 0px 0px 10px;
+}
+
+.lorainfo-sidebar-modal-delete-content:hover {
+    background-color: #494949;
+    border: #494949 2px solid;
+}
+
+.lorainfo-sidebar-modal-addContent:hover {
+    background-color: #494949;
+    border: #494949 2px solid;
+}
+
+.lorainfo-sidebar-modal-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lorainfo-sidebar-modal-save {
+    font-size: 20px;
+}
+
+.lorainfo-sidebar-modal-save:hover {
+    background-color: #494949;
+    border: #494949 2px solid;
+}

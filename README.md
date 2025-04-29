@@ -10,6 +10,12 @@
 2. `git clone https://github.com/somesomebody/comfyui-lorainfo-sidebar.git`
 3. Restart the ComfyUI
 
+**OR**
+
+If ComfyUI Manager already installed
+1. search `comfyui-lorainfo-sidebar` and install 
+2. Restart the ComfyUI
+
 ## Usage
 - This extension scans the `models/loras` folder for `.safetensors`, `.ckpt`, and `.pt` files.
 - The JSON and preview image filenames must match the LoRA file's name.

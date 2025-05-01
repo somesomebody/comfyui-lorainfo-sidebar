@@ -9,6 +9,6 @@ Repository = "https://github.com/somesomebody/comfyui-lorainfo-sidebar"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "somesomebody"
 DisplayName = "comfyui-lorainfo-sidebar"
 Icon = ""

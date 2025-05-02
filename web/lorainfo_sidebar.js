@@ -125,7 +125,7 @@ class LoRAInfo_SideBar {
         });
         return this.galleryContainer;
     }
-// document.getElementsByClassName("preview-container")[0].dataset["index"]
+
     loadLoraGallery() {
         this.galleryContainer.innerHTML = "";
         this.controlPanel.querySelector('.search-input').value = "";
@@ -179,7 +179,6 @@ class LoRAInfo_SideBar {
         });
     }
 
-
     async getLoraList() {
         try {
             const response = await api.fetchApi("/lorainfo_sidebar/get_lora_list");
@@ -187,7 +186,7 @@ class LoRAInfo_SideBar {
                 let result = []
                 const data = await response.json();
                 data.forEach(item => {
-                    result.push({"index": item["index"], "filename": item["filename"].split(".")[0]});
+                    result.push({"index": item["index"], "filename": item["filename"].slice(0, item["filename"].lastIndexOf("."))});
                 })
                 return result;
             }

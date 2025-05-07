@@ -22,7 +22,7 @@ async def get_lora_list(request):
                     
                     file_path = os.path.join(root, filename)
                     file_abspath = os.path.realpath(file_path)
-                    if os.path.isfile(file_abspath) and filename.lower().endswith(('.safetensors', '.ckpt', '.pt')):
+                    if os.path.isfile(file_abspath) and filename.lower().endswith(('.safetensors')):
                         lora_files.append({"index": lora_file_index, "filename": filename})
                         lora_file_index = lora_file_index + 1
 

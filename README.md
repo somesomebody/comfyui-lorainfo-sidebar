@@ -17,7 +17,7 @@ If ComfyUI Manager already installed
 2. Restart the ComfyUI
 
 ## Usage
-- This extension scans the `models/loras` folder for `.safetensors`, `.ckpt`, and `.pt` files.
+- This extension scans the `models/loras` folder for `.safetensors` files.
 - The JSON and preview image filenames must match the LoRA file's name.
 - You can add a preview image and a JSON file in the same directory as the LoRA file.
 - You can edit the JSON file like this:

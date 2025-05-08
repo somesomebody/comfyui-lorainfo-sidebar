@@ -172,6 +172,20 @@
     border: #494949 2px solid;
 }
 
+.lorainfo-sidebar-modelspecContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.lorainfo-sidebar-modal-preview {
+    align-self: center;
+}
+
+.lorainfo-sidebar-modelspec {
+    align-self: flex-start;
+    font-size: 12px;
+}
+
 .lorainfo-sidebar-modal-content {
     display: flex;
     align-items: center;
@@ -220,4 +234,10 @@
 .lorainfo-sidebar-modal-save:hover {
     background-color: #494949;
     border: #494949 2px solid;
+}
+
+.lorainfo-sidebar-modal-modelspec-ul {
+    word-break: break-word;      
+    overflow-wrap: break-word;   
+    white-space: normal;         
 }

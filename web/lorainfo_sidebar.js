@@ -60,7 +60,28 @@ class LoRAInfo_SideBar {
                         })
                     ]), 
                     $el("hr.lorainfo-sidebar-modal-hrline"),
-                    $el("img.lorainfo-sidebar-modal-preview"), 
+                    $el("div.lorainfo-sidebar-modelspecContainer", [
+                        $el("img.lorainfo-sidebar-modal-preview"), 
+                        $el("div.lorainfo-sidebar-modelspec", [
+                            $el("span", {innerHTML: "• Output Name: "}), $el("span.lorainfo-sidebar-modelspec-outputName"), $el("br"),
+                            $el("span", {innerHTML: "• Training Date: "}), $el("span.lorainfo-sidebar-modelspec-trainingDate"), $el("br"),
+                            $el("span", {innerHTML: "• Architecture: "}), $el("span.lorainfo-sidebar-modelspec-architecture"), $el("br"),
+                            $el("span", {innerHTML: "• Training Resolution: "}), $el("span.lorainfo-sidebar-modelspec-resolution"), $el("br"),
+                            $el("span", {innerHTML: "• Learning Rate: "}), $el("span.lorainfo-sidebar-modelspec-lr"), $el("br"),
+                            $el("span", {innerHTML: "• Learning Rate Scheduler: "}), $el("span.lorainfo-sidebar-modelspec-lrScheduler"), $el("br"),
+                            $el("span", {innerHTML: "• Learning Rate Warmup Steps: "}), $el("span.lorainfo-sidebar-modelspec-"), $el("br"),
+                            $el("span", {innerHTML: "• Optimizer: "}), $el("span.lorainfo-sidebar-modelspec-optimizer"), $el("br"),
+                            $el("span", {innerHTML: "• Loss Function: "}), $el("span.lorainfo-sidebar-modelspec-lf"), $el("br"),
+                            $el("span", {innerHTML: "• Gradient Accumulation steps: "}), $el("span.lorainfo-sidebar-modelspec-gradientAccSteps"), $el("br"),
+                            $el("span", {innerHTML: "• Gradient Checkpointing: "}), $el("span.lorainfo-sidebar-modelspec-gradientCheckpointing"), $el("br"),
+                            $el("span", {innerHTML: "• Clip Skip: "}), $el("span.lorainfo-sidebar-modelspec-clipSkip"), $el("br"),
+                            $el("span", {innerHTML: "• Epoch: "}), $el("span.lorainfo-sidebar-modelspec-epoch"), $el("br"),
+                            $el("span", {innerHTML: "• Batch per device: "}), $el("span.lorainfo-sidebar-modelspec-batchPerDevice"), $el("br"),
+                            $el("span", {innerHTML: "• Total Batch: "}), $el("span.lorainfo-sidebar-modelspec-totalBatch"), $el("br"),
+                            $el("span", {innerHTML: "• Steps: "}), $el("span.lorainfo-sidebar-modelspec-steps"), $el("br"),
+                            $el("span", {innerHTML: "• Mixed Precision: "}), $el("span.lorainfo-sidebar-modelspec-mixedPrecision"), $el("br")
+                        ])
+                    ]),
                     $el("div.lorainfo-sidebar-modal-contentContainer"),
                     $el("button.lorainfo-sidebar-modal-addContent", {
                         innerHTML: "Add Key-Value",
@@ -72,6 +93,11 @@ class LoRAInfo_SideBar {
                             innerHTML: "Save",
                             onclick: () => this.saveJSON()
                         })
+                    ]),
+                    $el("hr.lorainfo-sidebar-modal-hrline"),
+                    $el("details.lorainfo-sidebar-modal-modelspec-details", [
+                        $el("summary", {innerHTML: "All Metadata"}),
+                        $el("ul.lorainfo-sidebar-modal-modelspec-ul")
                     ])
                 ])
             ])
@@ -233,16 +259,42 @@ class LoRAInfo_SideBar {
         
         const previewContainer = e.target.parentElement;
         const modal = document.getElementsByClassName("lorainfo-sidebar-modal")[0];
+        modal.children[8].open = false;
 
         modal.children[0].children[0].innerHTML = previewContainer.id;
 
-        modal.children[2].src = previewContainer.children[1].src;
+        modal.children[2].children[0].src = previewContainer.children[1].src;
 
         const contentContainer = modal.children[3];
         contentContainer.innerHTML = "";
         this.getLoraJSON(previewContainer.id).then(data => {
             if (data != null) {
-                for (const [key, value] of Object.entries(data)) {
+                const metadata = data["metadata"];
+                modal.children[2].children[1].children[1].innerHTML = metadata["modelspec.title"] ? metadata["modelspec.title"] : "None";
+                modal.children[2].children[1].children[4].innerHTML = metadata["modelspec.date"] ? metadata["modelspec.date"].replace("T", " ") : "None";
+                modal.children[2].children[1].children[7].innerHTML = metadata["modelspec.architecture"] ? metadata["modelspec.architecture"] : "None";
+                modal.children[2].children[1].children[10].innerHTML = metadata["modelspec.resolution"] ? metadata["modelspec.resolution"] : "None";
+                modal.children[2].children[1].children[13].innerHTML = metadata["ss_learning_rate"] ? metadata["ss_learning_rate"] : "None";
+                modal.children[2].children[1].children[16].innerHTML = metadata["ss_lr_scheduler"] ? metadata["ss_lr_scheduler"] : "None";
+                modal.children[2].children[1].children[19].innerHTML = metadata["ss_lr_warmup_steps"] ? metadata["ss_lr_warmup_steps"] : "None";
+                modal.children[2].children[1].children[22].innerHTML = metadata["ss_optimizer"] ? this.extractOptimizerName(metadata["ss_optimizer"]) : "None";
+                modal.children[2].children[1].children[25].innerHTML = metadata["ss_loss_type"] ? metadata["ss_loss_type"] : "None";
+                modal.children[2].children[1].children[28].innerHTML = metadata["ss_gradient_accumulation_steps"] ? metadata["ss_gradient_accumulation_steps"] : "None";
+                modal.children[2].children[1].children[31].innerHTML = metadata["ss_gradient_checkpointing"] ? metadata["ss_gradient_checkpointing"] : "None";
+                modal.children[2].children[1].children[34].innerHTML = metadata["ss_clip_skip"] ? metadata["ss_clip_skip"] : "None";
+                modal.children[2].children[1].children[37].innerHTML = metadata["ss_num_epochs"] ? metadata["ss_num_epochs"] : "None";
+                modal.children[2].children[1].children[40].innerHTML = metadata["ss_batch_size_per_device"] ? metadata["ss_batch_size_per_device"] : "None";
+                modal.children[2].children[1].children[43].innerHTML = metadata["ss_total_batch_size"] ? metadata["ss_total_batch_size"] : "None";
+                modal.children[2].children[1].children[46].innerHTML = metadata["ss_steps"] ? metadata["ss_steps"] : "None";
+                modal.children[2].children[1].children[49].innerHTML = metadata["ss_mixed_precision"] ? metadata["ss_mixed_precision"] : "None";
+
+                modal.children[8].children[1].innerHTML = "";
+                for (const [key, value] of Object.entries(metadata)) {
+                    modal.children[8].children[1].appendChild($el("li", {innerHTML: `${key}: ${value}`}));
+                }
+
+                const json_data = data["json_file"];
+                for (const [key, value] of Object.entries(json_data)) {
                     contentContainer.appendChild(
                         $el("div.lorainfo-sidebar-modal-content", [
                             $el("input.lorainfo-sidebar-modal-content-key", {
@@ -260,6 +312,11 @@ class LoRAInfo_SideBar {
                 }
             }
         });
+    }
+
+    extractOptimizerName(full_string) {
+        const match = full_string.match(/\.([^.()]+)(?:\(|$)/);
+        return match ? match[1] : null;
     }
 
     async getLoraJSON(filename) {

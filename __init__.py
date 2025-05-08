@@ -3,6 +3,7 @@ from PIL import Image
 from aiohttp import web
 from server import PromptServer
 import folder_paths
+from safetensors.torch import safe_open
 
 @PromptServer.instance.routes.get("/lorainfo_sidebar/get_lora_list")
 async def get_lora_list(request):
@@ -94,10 +95,16 @@ async def get_lora_json(request):
                 for filename in files:
                     if filename.lower().endswith(".json"):
                         if requested_filename == os.path.splitext(filename)[0].strip():
-                            json_content = None
-                            with open(os.path.join(root, filename), "r", encoding="utf-8") as json_file:
-                                json_content = json.load(json_file)
-                                return web.json_response(json_content)
+                            filepath_no_ext = os.path.join(root, requested_filename)
+                            json_content = {}
+
+                            with safe_open(filepath_no_ext + ".safetensors", framework="pt", device="cpu") as safetensors_file:
+                                json_content["metadata"] = safetensors_file.metadata()
+
+                            with open(filepath_no_ext + ".json", "r", encoding="utf-8") as json_file:
+                                json_content["json_file"] = json.load(json_file)
+
+                            return web.json_response(json_content)
 
     return web.json_response(None)
 

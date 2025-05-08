@@ -133,7 +133,9 @@ class LoRAInfo_SideBar {
                 onclick: () => {
                     const searchInput = this.element.querySelector('.search-input');
                     searchInput.value = '';
-                    this.loadLoraGallery();
+                    for (const child of this.galleryContainer.children) {
+                        child.style.display = "block";
+                    }
                 }
             }),
             $el("button.reload", {

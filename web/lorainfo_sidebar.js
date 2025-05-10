@@ -273,6 +273,7 @@ class LoRAInfo_SideBar {
         for (let i = 1; i < 50; i = i + 3) {
             modal.children[2].children[1].children[i].innerHTML = "None";
         }
+        modal.children[8].children[1].innerHTML = "";
 
         this.getLoraJSON(previewContainer.id).then(data => {
             if (data != null) {
@@ -295,7 +296,6 @@ class LoRAInfo_SideBar {
                 modal.children[2].children[1].children[46].innerHTML = metadata["ss_steps"] ? metadata["ss_steps"] : "None";
                 modal.children[2].children[1].children[49].innerHTML = metadata["ss_mixed_precision"] ? metadata["ss_mixed_precision"] : "None";
 
-                modal.children[8].children[1].innerHTML = "";
                 for (const [key, value] of Object.entries(metadata)) {
                     modal.children[8].children[1].appendChild($el("li", {innerHTML: `${key}: ${value}`}));
                 }

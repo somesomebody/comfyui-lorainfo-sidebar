@@ -269,6 +269,11 @@ class LoRAInfo_SideBar {
 
         const contentContainer = modal.children[3];
         contentContainer.innerHTML = "";
+
+        for (let i = 1; i < 50; i = i + 3) {
+            modal.children[2].children[1].children[i].innerHTML = "None";
+        }
+
         this.getLoraJSON(previewContainer.id).then(data => {
             if (data != null) {
                 const metadata = data["metadata"];

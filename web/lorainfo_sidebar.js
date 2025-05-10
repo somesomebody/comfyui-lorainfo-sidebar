@@ -26,79 +26,65 @@ class LoRAInfo_SideBar {
         this.loadLoraGallery();
 
         document.body.appendChild(
-            $el("div.lorainfo-sidebar-overlay", {
+            $el("div.lorainfo-sidebar-modal", {
                 draggable: false,
                 style: {
                     display: "none"
                 },
-                onclick: (e) => {
-                    if (e.target == document.getElementsByClassName("lorainfo-sidebar-overlay")[0]) {
-                        document.getElementsByClassName("lorainfo-sidebar-overlay")[0].style.display = "none";
-                        document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.display = "none";
-                    }
-                }
             }, [
-                $el("div.lorainfo-sidebar-modal", {
-                    draggable: false,
-                    style: {
-                        display: "none"
-                    },
-                }, [
-                    $el("div.lorainfo-sidebar-modal-header", [
-                        $el("h2.lorainfo-sidebar-modal-title", {
-                            innerHTML: "Test Title", 
-                            style: {
-                                display: "inline-block"
-                            }
-                        }),
-                        $el("button.lorainfo-sidebar-modal-close", {
-                            innerHTML: "&#x2715;",
-                            onclick: () => {
-                                document.getElementsByClassName("lorainfo-sidebar-overlay")[0].style.display = "none";
-                                document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.display = "none";
-                            }
-                        })
-                    ]), 
-                    $el("hr.lorainfo-sidebar-modal-hrline"),
-                    $el("div.lorainfo-sidebar-modelspecContainer", [
-                        $el("img.lorainfo-sidebar-modal-preview"), 
-                        $el("div.lorainfo-sidebar-modelspec", [
-                            $el("span", {innerHTML: "• Output Name: "}), $el("span.lorainfo-sidebar-modelspec-outputName"), $el("br"),
-                            $el("span", {innerHTML: "• Training Date: "}), $el("span.lorainfo-sidebar-modelspec-trainingDate"), $el("br"),
-                            $el("span", {innerHTML: "• Architecture: "}), $el("span.lorainfo-sidebar-modelspec-architecture"), $el("br"),
-                            $el("span", {innerHTML: "• Training Resolution: "}), $el("span.lorainfo-sidebar-modelspec-resolution"), $el("br"),
-                            $el("span", {innerHTML: "• Learning Rate: "}), $el("span.lorainfo-sidebar-modelspec-lr"), $el("br"),
-                            $el("span", {innerHTML: "• Learning Rate Scheduler: "}), $el("span.lorainfo-sidebar-modelspec-lrScheduler"), $el("br"),
-                            $el("span", {innerHTML: "• Learning Rate Warmup Steps: "}), $el("span.lorainfo-sidebar-modelspec-"), $el("br"),
-                            $el("span", {innerHTML: "• Optimizer: "}), $el("span.lorainfo-sidebar-modelspec-optimizer"), $el("br"),
-                            $el("span", {innerHTML: "• Loss Function: "}), $el("span.lorainfo-sidebar-modelspec-lf"), $el("br"),
-                            $el("span", {innerHTML: "• Gradient Accumulation steps: "}), $el("span.lorainfo-sidebar-modelspec-gradientAccSteps"), $el("br"),
-                            $el("span", {innerHTML: "• Gradient Checkpointing: "}), $el("span.lorainfo-sidebar-modelspec-gradientCheckpointing"), $el("br"),
-                            $el("span", {innerHTML: "• Clip Skip: "}), $el("span.lorainfo-sidebar-modelspec-clipSkip"), $el("br"),
-                            $el("span", {innerHTML: "• Epoch: "}), $el("span.lorainfo-sidebar-modelspec-epoch"), $el("br"),
-                            $el("span", {innerHTML: "• Batch per device: "}), $el("span.lorainfo-sidebar-modelspec-batchPerDevice"), $el("br"),
-                            $el("span", {innerHTML: "• Total Batch: "}), $el("span.lorainfo-sidebar-modelspec-totalBatch"), $el("br"),
-                            $el("span", {innerHTML: "• Steps: "}), $el("span.lorainfo-sidebar-modelspec-steps"), $el("br"),
-                            $el("span", {innerHTML: "• Mixed Precision: "}), $el("span.lorainfo-sidebar-modelspec-mixedPrecision"), $el("br")
-                        ])
-                    ]),
-                    $el("div.lorainfo-sidebar-modal-contentContainer"),
-                    $el("button.lorainfo-sidebar-modal-addContent", {
-                        innerHTML: "Add Key-Value",
-                        onclick: (e) => this.addKeyValue(e)
+                $el("div.lorainfo-sidebar-modal-header", [
+                    $el("h2.lorainfo-sidebar-modal-title", {
+                        innerHTML: "Test Title", 
+                        style: {
+                            display: "inline-block"
+                        }
                     }),
-                    $el("hr.lorainfo-sidebar-modal-hrline"),
-                    $el("div.lorainfo-sidebar-modal-footer", [
-                        $el("button.lorainfo-sidebar-modal-save", {
-                            innerHTML: "Save",
-                            onclick: () => this.saveJSON()
-                        })
-                    ]),
-                    $el("hr.lorainfo-sidebar-modal-hrline"),
-                    $el("details.lorainfo-sidebar-modal-modelspec-details", [
-                        $el("summary", {innerHTML: "All Metadata"}),
-                        $el("ul.lorainfo-sidebar-modal-modelspec-ul")
+                    $el("button.lorainfo-sidebar-modal-close", {
+                        innerHTML: "&#x2715;",
+                        onclick: () => {
+                            document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.display = "none";
+                        }
+                    })
+                ]), 
+                $el("hr.lorainfo-sidebar-modal-hrline"),
+                $el("div.lorainfo-sidebar-modelspecContainer", [
+                    $el("img.lorainfo-sidebar-modal-preview"), 
+                    $el("div.lorainfo-sidebar-modelspec", [
+                        $el("span", {innerHTML: "• Output Name: "}), $el("span.lorainfo-sidebar-modelspec-outputName"), $el("br"),
+                        $el("span", {innerHTML: "• Training Date: "}), $el("span.lorainfo-sidebar-modelspec-trainingDate"), $el("br"),
+                        $el("span", {innerHTML: "• Architecture: "}), $el("span.lorainfo-sidebar-modelspec-architecture"), $el("br"),
+                        $el("span", {innerHTML: "• Training Resolution: "}), $el("span.lorainfo-sidebar-modelspec-resolution"), $el("br"),
+                        $el("span", {innerHTML: "• Learning Rate: "}), $el("span.lorainfo-sidebar-modelspec-lr"), $el("br"),
+                        $el("span", {innerHTML: "• Learning Rate Scheduler: "}), $el("span.lorainfo-sidebar-modelspec-lrScheduler"), $el("br"),
+                        $el("span", {innerHTML: "• Learning Rate Warmup Steps: "}), $el("span.lorainfo-sidebar-modelspec-"), $el("br"),
+                        $el("span", {innerHTML: "• Optimizer: "}), $el("span.lorainfo-sidebar-modelspec-optimizer"), $el("br"),
+                        $el("span", {innerHTML: "• Loss Function: "}), $el("span.lorainfo-sidebar-modelspec-lf"), $el("br"),
+                        $el("span", {innerHTML: "• Gradient Accumulation steps: "}), $el("span.lorainfo-sidebar-modelspec-gradientAccSteps"), $el("br"),
+                        $el("span", {innerHTML: "• Gradient Checkpointing: "}), $el("span.lorainfo-sidebar-modelspec-gradientCheckpointing"), $el("br"),
+                        $el("span", {innerHTML: "• Clip Skip: "}), $el("span.lorainfo-sidebar-modelspec-clipSkip"), $el("br"),
+                        $el("span", {innerHTML: "• Epoch: "}), $el("span.lorainfo-sidebar-modelspec-epoch"), $el("br"),
+                        $el("span", {innerHTML: "• Batch per device: "}), $el("span.lorainfo-sidebar-modelspec-batchPerDevice"), $el("br"),
+                        $el("span", {innerHTML: "• Total Batch: "}), $el("span.lorainfo-sidebar-modelspec-totalBatch"), $el("br"),
+                        $el("span", {innerHTML: "• Steps: "}), $el("span.lorainfo-sidebar-modelspec-steps"), $el("br"),
+                        $el("span", {innerHTML: "• Mixed Precision: "}), $el("span.lorainfo-sidebar-modelspec-mixedPrecision"), $el("br")
                     ])
+                ]),
+                $el("div.lorainfo-sidebar-modal-contentContainer"),
+                $el("button.lorainfo-sidebar-modal-addContent", {
+                    innerHTML: "Add Key-Value",
+                    onclick: (e) => this.addKeyValue(e)
+                }),
+                $el("hr.lorainfo-sidebar-modal-hrline"),
+                $el("div.lorainfo-sidebar-modal-footer", [
+                    $el("button.lorainfo-sidebar-modal-save", {
+                        innerHTML: "Save",
+                        onclick: () => this.saveJSON()
+                    })
+                ]),
+                $el("hr.lorainfo-sidebar-modal-hrline"),
+                $el("details.lorainfo-sidebar-modal-modelspec-details", [
+                    $el("summary", {innerHTML: "All Metadata"}),
+                    $el("ul.lorainfo-sidebar-modal-modelspec-ul")
                 ])
             ])
         );
@@ -256,7 +242,6 @@ class LoRAInfo_SideBar {
     }
 
     displayLoraEditModal(e) {
-        document.getElementsByClassName("lorainfo-sidebar-overlay")[0].style.display = "block";
         document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.display = "block";
         
         const previewContainer = e.target.parentElement;

@@ -29,7 +29,8 @@ class LoRAInfo_SideBar {
             $el("div.lorainfo-sidebar-modal", {
                 draggable: false,
                 style: {
-                    display: "none"
+                    display: "none",
+                    zIndex: 0
                 },
             }, [
                 $el("div.lorainfo-sidebar-modal-header", [
@@ -43,6 +44,7 @@ class LoRAInfo_SideBar {
                         innerHTML: "&#x2715;",
                         onclick: () => {
                             document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.display = "none";
+                            document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.zIndex = 0;
                         }
                     })
                 ]), 
@@ -102,6 +104,7 @@ class LoRAInfo_SideBar {
             document.head.appendChild(styleElement);
         } catch (error) {
             console.error('Error loading LoRA Sidebar styles:', error);
+            alert('[Custom Node: comfyui-lorainfo-sidebar]\n⚠ Failed to load CSS styles. Some layout may look broken.');
         }
     }
 
@@ -172,8 +175,8 @@ class LoRAInfo_SideBar {
                             innerHTML: filename
                         })
                     ]);
-
                     previewConainer.appendChild(previewTextContainer);
+
                     this.galleryContainer.appendChild(previewConainer);
                 });
             });
@@ -243,6 +246,7 @@ class LoRAInfo_SideBar {
 
     displayLoraEditModal(e) {
         document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.display = "block";
+        document.getElementsByClassName("lorainfo-sidebar-modal")[0].style.zIndex = 1000;
         
         const previewContainer = e.target.parentElement;
         const modal = document.getElementsByClassName("lorainfo-sidebar-modal")[0];

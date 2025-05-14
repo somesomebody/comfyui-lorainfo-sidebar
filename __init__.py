@@ -88,28 +88,27 @@ async def get_lora_json(request):
 
     lora_folder_paths = folder_paths.get_folder_paths("loras")
 
-    json_content = None
     for lora_folder_path in lora_folder_paths:
         lora_folder_abspath = os.path.realpath(lora_folder_path)
         if os.path.exists(lora_folder_abspath):
             for root, dirs, files in os.walk(lora_folder_abspath, followlinks=True):
                 for filename in files:
-                    
+                    # Find the LoRA file
                     if filename.lower().endswith(".safetensors") and requested_filename == os.path.splitext(filename)[0].strip():
-                        if json_content == None:
-                            json_content = {}
+                        response = {}
+                        filename = os.path.splitext(filename)[0].strip()
                         
-                        with safe_open(os.path.join(root, filename), framework="pt", device="cpu") as safetensors_file:
-                            json_content["metadata"] = safetensors_file.metadata()
+                        # Read the metadata of LoRA file
+                        with safe_open(os.path.join(root, filename + ".safetensors"), framework="pt", device="cpu") as safetensors_file:
+                            response["metadata"] = safetensors_file.metadata()
 
-                    if filename.lower().endswith(".json") and requested_filename == os.path.splitext(filename)[0].strip():
-                        if json_content == None:
-                            json_content = {}
+                        # Read the JSON file when its filename is the same as the LoRA filename
+                        with open(os.path.join(root, filename + ".json"), "r", encoding="utf-8") as json_file:
+                            response["json_file"] = json.load(json_file)
 
-                        with open(os.path.join(root, filename), "r", encoding="utf-8") as json_file:
-                            json_content["json_file"] = json.load(json_file)
+                        return web.json_response(response)
 
-    return web.json_response(json_content)
+    return web.json_response(None)
 
 @PromptServer.instance.routes.post("/lorainfo_sidebar/save_lora_json")
 async def save_lora_json(request):

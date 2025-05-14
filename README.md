@@ -21,4 +21,11 @@ If ComfyUI Manager already installed
 - The JSON and preview image filenames must match the LoRA file's name.
 - You can add a preview image and a JSON file in the same directory as the LoRA file.
 - You can edit the JSON file like this:
+
 ![Preview](readme_img/02.png)
+
+## Change Log
+- 1.1.6
+  - Adjustments to the LoRA file preview styling
+  - Improved the loading stability of the info button and filename text in the LoRA file preview across different environments
+  - Pinned the title and search bar to the top

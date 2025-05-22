@@ -34,3 +34,7 @@ If ComfyUI Manager already installed
   - Adjustments to the LoRA file preview styling
   - Improved the loading stability of the info button and filename text in the LoRA file preview across different environments
   - Pinned the title and search bar to the top
+
+## Planned Features
+- Support rgthree's JSON file
+- Enhance visibility of all metadata

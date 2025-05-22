@@ -25,6 +25,11 @@ If ComfyUI Manager already installed
 ![Preview](readme_img/02.png)
 
 ## Change Log
+- 1.2.0
+  - Modified the JSON editor to support nested JSON structures
+  - Reduced the server load caused by loading previews
+  - Add a white overlay while loading the sidebar
+  - Fix the CSS loading issue
 - 1.1.6
   - Adjustments to the LoRA file preview styling
   - Improved the loading stability of the info button and filename text in the LoRA file preview across different environments

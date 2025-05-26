@@ -7,7 +7,7 @@
 
 ## Installation
 1. Goto `ComfyUI/custom_nodes` in terminal 
-2. `git clone https://github.com/somesomebody/comfyui-lorainfo-sidebar.git`
+2. `git clone https://github.com/somesomebody/lorainfo-sidebar.git`
 3. Restart the ComfyUI
 
 **OR**

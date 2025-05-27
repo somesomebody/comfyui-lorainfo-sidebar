@@ -1,30 +1,51 @@
-# comfyui-lorainfo-sidebar
+# lorainfo-sidebar
 
 ![Preview](readme_img/01.png)
 
 ## Description 
 **LoRA Info Sidebar** allows you to preview images of LoRA files and edit their associated JSON files
 
+<br>
+
 ## Installation
-1. Goto `ComfyUI/custom_nodes` in terminal 
-2. `git clone https://github.com/somesomebody/lorainfo-sidebar.git`
+1. Open a terminal and navigate to `ComfyUI/custom_nodes` in terminal 
+2. Run 
+   ```bash 
+    git clone https://github.com/somesomebody/lorainfo-sidebar.git
 3. Restart the ComfyUI
 
 **OR**
 
-If ComfyUI Manager already installed
+If ComfyUI Manager is already installed
 1. search `comfyui-lorainfo-sidebar` and install 
 2. Restart the ComfyUI
+
+<br>
 
 ## Usage
 - This extension scans the `models/loras` folder for `.safetensors` files.
 - The JSON and preview image filenames must match the LoRA file's name.
-- You can add a preview image and a JSON file in the same directory as the LoRA file.
+- You can place the preview image and JSON file in the same directory as the LoRA file.
+- If rgthree's JSON file exists, you can edit it
+
+<br>
+
+- You can check LoRA's metadata like this :
+![Preview](readme_img/03.png)
+
+<br>
+
 - You can edit the JSON file like this:
 
 ![Preview](readme_img/02.png)
 
+<br>
+
 ## Change Log
+- 1.2.1
+  - Support for rgthree's JSON file
+  - Add a toggle button to show/hide items
+  - Enhance the visibility of all metadata
 - 1.2.0
   - Modified the JSON editor to support nested JSON structures
   - Reduced the server load caused by loading previews
@@ -35,6 +56,6 @@ If ComfyUI Manager already installed
   - Improved the loading stability of the info button and filename text in the LoRA file preview across different environments
   - Pinned the title and search bar to the top
 
+<br>
+
 ## Planned Features
-- Support rgthree's JSON file
-- Enhance visibility of all metadata

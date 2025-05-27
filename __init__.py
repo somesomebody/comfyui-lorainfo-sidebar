@@ -105,12 +105,19 @@ async def get_lora_info(request) :
     with safe_open(os.path.join(dir_path, filename + ext_safetensors), framework="pt", device="cpu") as safetensors_file:
         response["metadata"] = safetensors_file.metadata()
 
-    # Read the local JSON file when its filename is the same as the LoRA filename
+    # Read the custom JSON file when its filename is the same as the LoRA filename
     try: 
-        with open(os.path.join(dir_path, filename + ".json"), "r", encoding="utf-8") as local_json_file:
-            response["local_json_file"] = json.load(local_json_file)
+        with open(os.path.join(dir_path, filename + ".json"), "r", encoding="utf-8") as custom_json_file:
+            response["custom_json_file"] = json.load(custom_json_file)
     except Exception as e :
-        response["local_json_file"] = None
+        response["custom_json_file"] = None
+
+    # Read the rgthree JSON file
+    try: 
+        with open(os.path.join(dir_path, filename + ".safetensors.rgthree-info.json"), "r", encoding="utf-8") as rgthree_json_file:
+            response["rgthree_json_file"] = json.load(rgthree_json_file)
+    except Exception as e :
+        response["rgthree_json_file"] = None
 
     return web.json_response(response)
 

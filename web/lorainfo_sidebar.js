@@ -6,13 +6,18 @@ class LoRAInfo_SideBar {
     constructor(app) {
         this.app = app;
 
+        // Dict for JSON editing
+        this.keyIndex = 0;
+        this.keyDict = {};
+        this.valueIndex = 0;
+        this.valueDict = {};
+
         // Load CSS
         this.createStyle();
 
         // Create sidebar elements
         this.controlPanel = this.createControlPanel();
-        this.gallery = this.createGallery();
-        this.modal = this.createModal();
+        this.gallery = $el("div.lorainfo-gallery");
 
         // Create a sidebar
         this.element = $el("div.lorainfo-sidebar", {
@@ -32,6 +37,9 @@ class LoRAInfo_SideBar {
                 ])
             ])
         ]);
+
+        // Create a modal
+        this.modal = this.createModal();
 
         // Load a sidebar
         this.loadLoRAGallery();
@@ -126,14 +134,6 @@ class LoRAInfo_SideBar {
         }
     }
 
-    // Create a gallery container
-    createGallery() {
-        this.gallery = $el("div.lorainfo-gallery", {
-            draggable: false,            
-        });
-        return this.gallery;
-    }
-
     // Load LoRA preview images
     loadLoRAGallery() {
         // Clear LoRA gallery
@@ -219,14 +219,14 @@ class LoRAInfo_SideBar {
                 const data = await response.json();
 
                 // Construct LoRA list
-                let result = []
+                let result = [];
                 data.forEach(item => {
                     result.push({
                         "index": item["index"], 
                         "filename": item["filename"].slice(0, item["filename"].lastIndexOf(".")),
                         "path": item["path"]
                     });
-                })
+                });
                 return result;
             }
 
@@ -320,20 +320,38 @@ class LoRAInfo_SideBar {
             // All metadata of LoRA
             $el("details.lorainfo-sidebar-modal-modelspec-details", [
                 $el("summary", {innerHTML: "All Metadata"}),
-                $el("ul.lorainfo-sidebar-modal-modelspec-ul")
+                // Metadata container
+                $el("div.lorainfo-sidebar-modal-metadata-container")
             ]), 
             // Separator line
             $el("hr.lorainfo-sidebar-modal-hrline"),
-            // Custom JSON
-            $el("h3.lorainfo-sidebar-modal-custom-JSON-title", {
-                innerHTML: "Custom JSON"
-            }),
+            // Custom JSON header 
+            $el("div.lorainfo-sidebar-modal-custom-JSON-header", [
+                // Custom JSON title
+                $el("h3.lorainfo-sidebar-modal-custom-JSON-title", {
+                    innerHTML: "Custom JSON"
+                }),
+                // Expand all button
+                $el("button.lorainfo-sidebar-modal-custom-JSON-expand-all", {
+                    innerHTML: "Expand all items",
+                    onclick: (e) => {
+                        this.expandRecursively(e.target.parentElement.nextSibling);
+                    }
+                }),
+                // Collapse all button
+                $el("button.lorainfo-sidebar-modal-custom-JSON-collapse-all", {
+                    innerHTML: "Collapse all items",
+                    onclick: (e) => {
+                        this.collapseRecursively(e.target.parentElement.nextSibling);
+                    }
+                })
+            ]),
             // Custom JSON container
             $el("div.lorainfo-sidebar-modal-custom-JSON-content-container"),
             // Custom JSON save button
             $el("button.lorainfo-sidebar-modal-custom-JSON-save", {
                 innerHTML: "Save",
-                onclick: (e) => this.saveCustomJSON(e)
+                onclick: (e) => this.saveJSON(e)
             }),
             // Button to add a top-level array to the custom JSON container
             $el("button.lorainfo-sidebar-modal-add-arr", {
@@ -344,6 +362,36 @@ class LoRAInfo_SideBar {
             $el("button.lorainfo-sidebar-modal-add-dict", {
                 innerHTML: "Add dict",
                 onclick: () => this.createTopLevelDictionary()
+            }),
+            // Separator line
+            $el("hr.lorainfo-sidebar-modal-hrline"),
+            // rgthree JSON header
+            $el("div.lorainfo-sidebar-modal-rgthree-JSON-header", [
+                // rgthree JSON title
+                $el("h3.lorainfo-sidebar-modal-rgthree-JSON-title", {
+                    innerHTML: "rgthree JSON"
+                }),
+                // Expand all button
+                $el("button.lorainfo-sidebar-modal-rgthree-JSON-expand-all", {
+                    innerHTML: "Expand all items",
+                    onclick: (e) => {
+                        this.expandRecursively(e.target.parentElement.nextSibling);
+                    }
+                }),
+                // Collapse all button
+                $el("button.lorainfo-sidebar-modal-rgthree-JSON-collapse-all", {
+                    innerHTML: "Collapse all items",
+                    onclick: (e) => {
+                        this.collapseRecursively(e.target.parentElement.nextSibling);
+                    }
+                })
+            ]),
+            // rgthree JSON container
+            $el("div.lorainfo-sidebar-modal-rgthree-JSON-content-container"),
+            // rgthree JSON save button
+            $el("button.lorainfo-sidebar-modal-rgthree-JSON-save", {
+                innerHTML: "Save",
+                onclick: (e) => this.saveJSON(e)
             })
         ]);
 
@@ -354,22 +402,33 @@ class LoRAInfo_SideBar {
     }
 
     // Save the edited JSON information to the file
-    async saveCustomJSON(e) { 
-        const json_info = { "path": null, "json_data": null }
+    async saveJSON(e) {
+        // Deep copy of the content container
+        const copiedContainer = e.target.previousElementSibling.cloneNode(true);
+        this.expandRecursively(copiedContainer);
+
+        const json_info = { "path": null, "json_data": null };
 
         try {
-            // Get JSON data and file path
-            json_info["path"] = document.getElementsByClassName("lorainfo-sidebar-modal")[0].children[0].children[0].dataset.path;
-            json_info["json_data"] = this.convertNumericStrings(this.list2JSON(e.target.previousElementSibling.children[0]));
+            // Get the edited JSON data and file path
+            if (e.target.previousElementSibling.previousElementSibling.innerHTML === "rgthree JSON") {
+                const lora_path = document.getElementsByClassName("lorainfo-sidebar-modal")[0].children[0].children[0].dataset.path;
+                const path_no_ext = lora_path.substring(0, lora_path.lastIndexOf('.'));
+                json_info["path"] = path_no_ext + ".safetensors.rgthree-info.json";
+            } else {
+                json_info["path"] = document.getElementsByClassName("lorainfo-sidebar-modal")[0].children[0].children[0].dataset.path;
+            }
+            json_info["json_data"] = this.convertNumericStrings(this.list2JSON(copiedContainer.children[0]));
         } catch (e) {
-            console.error("[LoRA Info SideBar - Error: saveJSON]", e);
+            console.error("[LoRA Info SideBar - Error: saveCustomJSON]", e);
             alert("[Custom Node: lorainfo-sidebar]\n⚠ Duplicated Key");
             return;
         }
 
+        console.log(json_info);
 
         try {
-            // Send a post request 
+            // Send a post request
             const response = await api.fetchApi("/lorainfo_sidebar/save_lora_json", {
                 method: "POST",
                 headers: {
@@ -387,11 +446,11 @@ class LoRAInfo_SideBar {
                     alert("Fail to save JSON");
                 }
             } else {
-                console.error("[LoRA Info SideBar - Error: saveJSON] request was sent but failed");
+                console.error("[LoRA Info SideBar - Error: saveCustomJSON] request was sent but failed");
             }
 
         } catch (error) {
-            console.error("[LoRA Info SideBar - Error: saveJSON]", error);
+            console.error("[LoRA Info SideBar - Error: saveCustomJSON]", error);
         }
     }
 
@@ -424,10 +483,7 @@ class LoRAInfo_SideBar {
                 if (nestedUl) {
                     result.push(this.list2JSON(nestedUl));
                 } else {
-                    const textNode = Array.from(li.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-                    if (textNode) {
-                        result.push(textNode.textContent.trim());
-                    }
+                    result.push(li.childNodes[2].innerHTML.trim());
                 }
             }
 
@@ -454,7 +510,141 @@ class LoRAInfo_SideBar {
                 seenKeys.add(key);
             }
 
-            return result
+            return result;
+        }
+    }
+
+    createToggleButton() {
+        return $el("button.lorainfo-sidebar-modal-custom-JSON-content-toggle", {
+            innerHTML: "&#x25BC",
+            title: "Toggle Content",
+            onclick: (e) => this.toggleItem(e)
+        });
+    }
+
+    toggleItem(e) {
+        const lengthLimit = 20;
+        const isOpen = e.target.innerHTML === "▼" ? true : false;
+        const ulType = e.target.parentElement.parentElement.parentElement.dataset.form;
+
+        if (ulType === "arr") {
+            const valueIndex = e.target.nextSibling.nextSibling.dataset.index;
+
+            if (isOpen) {
+                e.target.innerHTML = "&#x25B6";
+
+                let collapsedValue = e.target.nextSibling.nextSibling.innerHTML;
+                collapsedValue = (collapsedValue.length > lengthLimit ? collapsedValue.substring(0,lengthLimit) : collapsedValue) + " [ Collapsed ]";
+
+                this.valueDict[valueIndex] = e.target.nextSibling.nextSibling.innerHTML;
+                e.target.nextSibling.nextSibling.innerHTML = collapsedValue;
+            } else {
+                e.target.innerHTML = "&#x25BC";
+
+                const value = this.valueDict[valueIndex];
+                delete this.valueDict.valueIndex;
+
+                e.target.nextSibling.nextSibling.innerHTML = value;
+            }
+        } else if (ulType === "dict") {
+            const keyIndex = e.target.nextSibling.nextSibling.dataset.index;
+            
+            if (isOpen) {
+                e.target.innerHTML = "&#x25B6";
+
+                let collapsedKey = e.target.nextSibling.nextSibling.innerHTML;
+                collapsedKey = (collapsedKey.length > lengthLimit ? collapsedKey.substring(0,lengthLimit) : collapsedKey) + " [ Collapsed ]";
+
+                this.keyDict[keyIndex] = e.target.nextSibling.nextSibling.innerHTML;
+                e.target.nextSibling.nextSibling.innerHTML = collapsedKey;
+
+                e.target.parentElement.children[3].style.display = "none";
+                e.target.parentElement.children[4].style.display = "none";
+                e.target.parentElement.children[5].style.display = "none";
+            } else {
+                e.target.innerHTML = "&#x25BC";
+
+                const key = this.keyDict[keyIndex];
+                delete this.keyDict.keyIndex;
+
+                e.target.nextSibling.nextSibling.innerHTML = key;
+                e.target.parentElement.children[3].style.display = "inline";
+                e.target.parentElement.children[4].style.display = "inline";
+                e.target.parentElement.children[5].style.display = e.target.parentElement.children[5].localName === "ul" ? "block" : "inline";
+            }
+        }
+    }
+
+    expandRecursively(e) {
+        if (e.localName === "button" && e.className === "lorainfo-sidebar-modal-custom-JSON-content-toggle") {
+            if (e.innerHTML === "▶") {
+                e.innerHTML = "&#x25BC";
+
+                const ulType = e.parentElement.parentElement.parentElement.dataset.form;
+
+                if (ulType === "arr") {
+                    const valueIndex = e.nextSibling.nextSibling.dataset.index;
+                    const value = this.valueDict[valueIndex];
+                    delete this.valueDict.valueIndex;
+
+                    e.nextSibling.nextSibling.innerHTML = value;
+                } else if (ulType === "dict") {
+                    const keyIndex = e.nextSibling.nextSibling.dataset.index;
+                    const key = this.keyDict[keyIndex];
+                    delete this.keyDict.keyIndex;
+
+                    e.nextSibling.nextSibling.innerHTML = key;
+                    e.parentElement.children[3].style.display = "inline";
+                    e.parentElement.children[4].style.display = "inline";
+                    e.parentElement.children[5].style.display = e.parentElement.children[5].localName === "ul" ? "block" : "inline";
+                }
+            }
+        }
+
+        if (e.children) {
+            for (let child of e.children) {
+                this.expandRecursively(child);
+            }
+        }
+    }
+
+    collapseRecursively(e) {
+        if (e.localName === "button" && e.className === "lorainfo-sidebar-modal-custom-JSON-content-toggle") {
+            if (e.innerHTML === "▼") {
+                e.innerHTML = "&#x25B6";
+
+                const lengthLimit = 20;
+                const ulType = e.parentElement.parentElement.parentElement.dataset.form;
+
+                if (ulType === "arr") {
+                    const valueIndex = e.nextSibling.nextSibling.dataset.index;
+
+                    let collapsedValue = e.nextSibling.nextSibling.innerHTML;
+                    collapsedValue = (collapsedValue.length > lengthLimit ? collapsedValue.substring(0,lengthLimit) : collapsedValue) + " [ Collapsed ]";
+
+                    this.valueDict[valueIndex] = e.nextSibling.nextSibling.innerHTML;
+                    e.nextSibling.nextSibling.innerHTML = collapsedValue;
+                } else if (ulType === "dict") {
+                    const keyIndex = e.nextSibling.nextSibling.dataset.index;
+
+                    let collapsedKey = e.nextSibling.nextSibling.innerHTML;
+                    collapsedKey = (collapsedKey.length > lengthLimit ? collapsedKey.substring(0,lengthLimit) : collapsedKey) + " [ Collapsed ]";
+
+                    this.keyDict[keyIndex] = e.nextSibling.nextSibling.innerHTML;
+                    e.nextSibling.nextSibling.innerHTML = collapsedKey;
+
+                    e.parentElement.children[3].style.display = "none";
+                    e.parentElement.children[4].style.display = "none";
+                    e.parentElement.children[5].style.display = "none";
+                }
+                
+            }
+        }
+        
+        if (e.children) {
+            for (let child of e.children) {
+                this.collapseRecursively(child);
+            }
         }
     }
 
@@ -463,7 +653,7 @@ class LoRAInfo_SideBar {
             innerHTML: "&#x2716;",
             title: "Delete Key and Value",
             onclick: (e) => this.deleteItem(e)
-        })
+        });
     }
 
     deleteItem(e) {
@@ -499,7 +689,7 @@ class LoRAInfo_SideBar {
             innerHTML: "&#x271A;",
             title: "Toggle add dropdown menu",
             onclick: (e) => this.toggleDropdown(e)
-        })
+        });
     }
 
     toggleDropdown(e) {
@@ -552,30 +742,35 @@ class LoRAInfo_SideBar {
         obj.spellcheck = false;
     }
 
+    // Prevent event propagation but don't prevent the default browser actions (like select all, copy, paste, etc)
     preventPropagation(obj) {
         const stop = (e) => {
-            e.stopPropagation();
             e.stopImmediatePropagation();
-
-            if (e.key === "Enter") {
-                // Check element is active and has blur function
-                if (document.activeElement && typeof document.activeElement.blur === 'function') {
-                    document.activeElement.blur();
-                }
-            }
+            e.stopPropagation();
         };
-
-        obj.addEventListener("keydown", stop);
-        obj.addEventListener("keyup", stop);
-        obj.addEventListener("keypress", stop);
+        obj.addEventListener("keydown", stop, true);
+        obj.addEventListener("keypress", stop, true);
+        obj.addEventListener("keyup", stop, true);
+        obj.addEventListener("paste", stop, true);
     }
 
-    createKeySpan(str) {
+    createKeySpanforEdit(str, index) {
         const keySpan = $el("span.lorainfo-sidebar-modal-custom-JSON-content-key", {
-            innerHTML: str === undefined ? "insert your key" : str
+            innerHTML: str === undefined ? "insert your key" : str,
+            dataset: {
+                index: index
+            }
         });
         this.convertEditable(keySpan);
         this.preventPropagation(keySpan);
+        return keySpan;
+    }
+
+    createKeySpanforDisplay(str) {
+        const keySpan = $el("span.lorainfo-sidebar-modal-metadata-key", {
+            innerHTML: str
+        });
+
         return keySpan;
     }
 
@@ -585,12 +780,24 @@ class LoRAInfo_SideBar {
         });
     }
 
-    createValueSpan(str) {
+    createValueSpanforEdit(str, index) {
         const valueContent = $el("span.lorainfo-sidebar-modal-custom-JSON-content-value", {
-            innerHTML: str === undefined ? "insert your value" : str
+            innerHTML: str === undefined ? "insert your value" : str,
+            dataset: {
+                index: index
+            }
         });
+
         this.convertEditable(valueContent);
         this.preventPropagation(valueContent);
+        return valueContent;
+    }
+
+    createValueSpanforDisplay(str) {
+        const valueContent = $el("span.lorainfo-sidebar-modal-metadata-value", {
+            innerHTML: str
+        });
+
         return valueContent;
     }
 
@@ -601,19 +808,21 @@ class LoRAInfo_SideBar {
         if (addType === "Add key - primitive value") {
             const li = $el("li");
 
+            li.appendChild(this.createToggleButton());
             li.appendChild(this.createDeleteButton());
-            li.appendChild(this.createKeySpan());
+            li.appendChild(this.createKeySpanforEdit(undefined, this.keyIndex++));
             li.appendChild(this.createColonSpan());
             li.appendChild($el("br"));
-            li.appendChild(this.createValueSpan());
+            li.appendChild(this.createValueSpanforEdit(undefined, this.valueIndex++));
 
             const dropdownButton = liWraper.children[liWraper.children.length - 1];
             liWraper.insertBefore(li, dropdownButton);
 
         } else if (addType === "Add key - array") {
             const li = $el("li", [
+                this.createToggleButton(),
                 this.createDeleteButton(),
-                this.createKeySpan(),
+                this.createKeySpanforEdit(undefined, this.keyIndex++),
                 this.createColonSpan(),
                 $el("br"),
                 $el("ul", {
@@ -622,9 +831,10 @@ class LoRAInfo_SideBar {
                     }
                 }, [
                     $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
-                        $el("li.lorainfo-sidebar-modal-custom-JSON-content-value", [
+                        $el("li", [
+                            this.createToggleButton(),
                             this.createDeleteButton(),
-                            document.createTextNode("insert your value")
+                            this.createValueSpanforEdit(undefined, this.valueIndex++)
                         ]),
                         $el("li", [
                             this.createAddContentButton(),
@@ -633,17 +843,15 @@ class LoRAInfo_SideBar {
                     ])
                 ])
             ]);
-    
-            this.convertEditable(li.children[4].children[0].children[0]);
-            this.preventPropagation(li.children[4].children[0].children[0]);
 
             const dropdownButton = liWraper.children[liWraper.children.length - 1];
             liWraper.insertBefore(li, dropdownButton);
 
         } else if (addType === "Add key - dictionary") {
             const li = $el("li", [
+                this.createToggleButton(),
                 this.createDeleteButton(),
-                this.createKeySpan("insert your key1"),
+                this.createKeySpanforEdit("insert your key1", this.keyIndex++),
                 this.createColonSpan(),
                 $el("br"),
                 $el("ul", {
@@ -653,11 +861,12 @@ class LoRAInfo_SideBar {
                 }, [
                     $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
                         $el("li", [
+                            this.createToggleButton(),
                             this.createDeleteButton(),
-                            this.createKeySpan("insert your key2"),
+                            this.createKeySpanforEdit("insert your key2", this.keyIndex++),
                             this.createColonSpan(),
                             $el("br"),
-                            this.createValueSpan()
+                            this.createValueSpanforEdit(undefined, this.valueIndex++)
                         ]),
                         $el("li", [
                             this.createAddContentButton(),
@@ -679,27 +888,26 @@ class LoRAInfo_SideBar {
         let liWraper = e.target.parentElement.parentElement.parentElement;
 
         if (addType === "Add primitive value") {
-            const li = $el("li.lorainfo-sidebar-modal-custom-JSON-content-value", [
+            const li = $el("li", [
+                this.createToggleButton(),
                 this.createDeleteButton(),
-                document.createTextNode("insert your value")
+                this.createValueSpanforEdit(undefined, this.valueIndex++)
             ]);
-            this.convertEditable(li);
-            this.preventPropagation(li);
             
             const dropdownButton = liWraper.children[liWraper.children.length - 1];
             liWraper.insertBefore(li, dropdownButton);
-
         } else if (addType === "Add array") {
-            const li = $el("li.lorainfo-sidebar-modal-custom-JSON-content-value", [
+            const li = $el("li", [
                 $el("ul", {
                     dataset: {
                         form: "arr"
                     }
                 }, [
                     $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
-                        $el("li.lorainfo-sidebar-modal-custom-JSON-content-value", [
+                        $el("li", [
+                            this.createToggleButton(),
                             this.createDeleteButton(),
-                            document.createTextNode("insert your value")
+                            this.createValueSpanforEdit(undefined, this.valueIndex++)
                         ]),
                         $el("li", [
                             this.createAddContentButton(),
@@ -709,12 +917,10 @@ class LoRAInfo_SideBar {
                 ])
             ]);
 
-            this.convertEditable(li.children[0].children[0].children[0]);
-            this.preventPropagation(li.children[0].children[0].children[0]);
             const dropdownButton = liWraper.children[liWraper.children.length - 1];
             liWraper.insertBefore(li, dropdownButton);
         } else if (addType === "Add dictionary") {
-            const li = $el("li.lorainfo-sidebar-modal-custom-JSON-content-value", [
+            const li = $el("li", [
                 $el("ul", {
                     dataset: {
                         form: "dict"
@@ -722,11 +928,12 @@ class LoRAInfo_SideBar {
                 }, [
                     $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
                         $el("li", [
+                            this.createToggleButton(),
                             this.createDeleteButton(),
-                            this.createKeySpan(), 
+                            this.createKeySpanforEdit(undefined, this.keyIndex++), 
                             this.createColonSpan(),
                             $el("br"),
-                            this.createValueSpan()
+                            this.createValueSpanforEdit(undefined, this.valueIndex++)
                         ]),
                         $el("li", [
                             this.createAddContentButton(),
@@ -752,9 +959,10 @@ class LoRAInfo_SideBar {
                 }
             }, [
                 $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
-                    $el("li.lorainfo-sidebar-modal-custom-JSON-content-value", [
+                    $el("li", [
+                        this.createToggleButton(),
                         this.createDeleteButton(),
-                        document.createTextNode("insert your value")
+                        this.createValueSpanforEdit(undefined, this.valueIndex++)
                     ]),
                     $el("li", [
                         this.createAddContentButton(),
@@ -764,9 +972,8 @@ class LoRAInfo_SideBar {
             ])
         );
 
-        this.convertEditable(this.modal.children[6].children[0].children[0].children[0]);
-        this.preventPropagation(this.modal.children[6].children[0].children[0].children[0]);
-        
+        this.modal.children[5].children[1].style.display = "inline-block";
+        this.modal.children[5].children[2].style.display = "inline-block";
         this.modal.children[7].style.display = "inline-block";
         this.modal.children[8].style.display = "none";
         this.modal.children[9].style.display = "none";
@@ -782,11 +989,12 @@ class LoRAInfo_SideBar {
             }, [
                 $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
                     $el("li", [
+                        this.createToggleButton(),
                         this.createDeleteButton(),
-                        this.createKeySpan(),
+                        this.createKeySpanforEdit(undefined, this.keyIndex++),
                         this.createColonSpan(),
                         $el("br"),
-                        this.createValueSpan()
+                        this.createValueSpanforEdit(undefined, this.valueIndex++)
                     ]),
                     $el("li", [
                         this.createAddContentButton(),
@@ -796,6 +1004,8 @@ class LoRAInfo_SideBar {
             ])
         );
 
+        this.modal.children[5].children[1].style.display = "inline-block";
+        this.modal.children[5].children[2].style.display = "inline-block";
         this.modal.children[7].style.display = "inline-block";
         this.modal.children[8].style.display = "none";
         this.modal.children[9].style.display = "none";
@@ -822,7 +1032,9 @@ class LoRAInfo_SideBar {
         for (let i = 1; i < 50; i = i + 3) {
             modal.children[2].children[1].children[i].innerHTML = "None";
         }
-        modal.children[3].children[1].innerHTML = "";
+        if (modal.children[3].children[1].children[0]) {
+            modal.children[3].children[1].removeChild(modal.children[3].children[1].children[0]);
+        }
 
         // Close All metadata
         modal.children[3].open = false; 
@@ -850,24 +1062,43 @@ class LoRAInfo_SideBar {
                 modal.children[2].children[1].children[46].innerHTML = metadata["ss_steps"] ? metadata["ss_steps"] : "None";
                 modal.children[2].children[1].children[49].innerHTML = metadata["ss_mixed_precision"] ? metadata["ss_mixed_precision"] : "None";
 
-                // Fetch all metadata - 가시성 개선 필요
-                for (const [key, value] of Object.entries(metadata)) {
-                    modal.children[3].children[1].appendChild($el("li", {innerHTML: `${key}: ${value}`}));
-                }
+                // Fetch all metadata
+                modal.children[3].children[1].appendChild(this.JSON2ListforDisplay(metadata));
 
-                // Fetch local JSON data
-                const local_json_data = data["local_json_file"];
-                const localJSONContainer = modal.children[6];
-                localJSONContainer.innerHTML = "";
-                if (local_json_data !== null) {
-                    localJSONContainer.appendChild(this.JSON2List(local_json_data));
+                // Fetch custom JSON data
+                const custom_json_data = data["custom_json_file"];
+                const customJSONContainer = modal.children[6];
+                customJSONContainer.innerHTML = "";
+                if (custom_json_data !== null) {
+                    customJSONContainer.appendChild(this.JSON2ListforEdit(custom_json_data));
+                    modal.children[5].children[1].style.display = "inline-block";
+                    modal.children[5].children[2].style.display = "inline-block";
                     modal.children[7].style.display = "inline-block";
                     modal.children[8].style.display = "none";
                     modal.children[9].style.display = "none";
                 } else {
+                    modal.children[5].children[1].style.display = "none";
+                    modal.children[5].children[2].style.display = "none";
                     modal.children[7].style.display = "none";
                     modal.children[8].style.display = "inline-block";
                     modal.children[9].style.display = "inline-block";
+                }
+
+                // Fetch rgthree JSON data
+                const rgthree_json_data = data["rgthree_json_file"];
+                const rgthreeJSONContainer = modal.children[12];
+                rgthreeJSONContainer.innerHTML = "";
+                if (rgthree_json_data !== null) {
+                    rgthreeJSONContainer.appendChild(this.JSON2ListforEdit(rgthree_json_data));
+                    modal.children[10].style.setProperty('display', 'block', 'important');
+                    modal.children[11].style.display = "block";
+                    modal.children[12].style.display = "block";
+                    modal.children[13].style.display = "inline-block";
+                } else {
+                    modal.children[10].style.setProperty('display', 'none', 'important');
+                    modal.children[11].style.display = "none";
+                    modal.children[12].style.display = "none";
+                    modal.children[13].style.display = "none";
                 }
             }
         });
@@ -893,7 +1124,7 @@ class LoRAInfo_SideBar {
         }
     }
 
-    JSON2List(obj) {
+    JSON2ListforEdit(obj) {
         if (Array.isArray(obj)) { // Case of Array
             const ul = $el("ul", {
                 dataset: {
@@ -904,15 +1135,14 @@ class LoRAInfo_SideBar {
             ]);
 
             for (const value of obj) {
-                const li = $el("li.lorainfo-sidebar-modal-custom-JSON-content-value");
+                const li = $el("li");
 
                 if (typeof value === "object") {
-                    li.appendChild(this.JSON2List(value));
+                    li.appendChild(this.JSON2ListforEdit(value));
                 } else {
+                    li.appendChild(this.createToggleButton());
                     li.appendChild(this.createDeleteButton());
-                    li.appendChild(document.createTextNode(value));
-                    this.convertEditable(li);
-                    this.preventPropagation(li);
+                    li.appendChild(this.createValueSpanforEdit(value, this.valueIndex++));
                 }
 
                 ul.children[0].appendChild(li);
@@ -933,22 +1163,95 @@ class LoRAInfo_SideBar {
 
             for (const [key, value] of Object.entries(obj)) {
                 const li = $el("li", [
+                    this.createToggleButton(),
                     this.createDeleteButton(),
-                    this.createKeySpan(key),
+                    this.createKeySpanforEdit(key, this.keyIndex++),
                     this.createColonSpan(),
                     $el("br")
                 ]);
 
                 if (typeof value === 'object' && value !== null) {
-                    li.appendChild(this.JSON2List(value));
+                    li.appendChild(this.JSON2ListforEdit(value));
                 } else {
-                    li.appendChild(this.createValueSpan(value));
+                    li.appendChild(this.createValueSpanforEdit(value, this.valueIndex++));
                 }
 
                 ul.children[0].appendChild(li);
             }
 
             ul.children[0].appendChild($el("li", [this.createAddContentButton(), this.createDropdownMenu("dict")]));
+            
+            return ul;
+        }
+    }
+
+    JSON2ListforDisplay(obj) {
+        if (Array.isArray(obj)) { // Case of Array
+            const ul = $el("ul", {
+                dataset: {
+                    form: "arr"
+                }
+            }, [
+                $el("div.lorainfo-sidebar-modal-metadata-liWraper")
+            ]);
+
+            for (let value of obj) {
+                const li = $el("li");
+                
+                // Try to transform the string into a object
+                try {
+                    const parsed = JSON.parse(value);
+                    if (parsed && typeof parsed === "object") {
+                        value = parsed;
+                    }
+                } catch (e) {
+                    // Intentionally ignored
+                }
+
+                if (typeof value === "object") {
+                    li.appendChild(this.JSON2ListforDisplay(value));
+                } else {
+                    li.appendChild(this.createValueSpanforDisplay(value));
+                }
+
+                ul.children[0].appendChild(li);
+            }
+
+            return ul;
+
+        } else if (typeof obj === "object" && obj !== null) { // Case of Dictionary
+            const ul = $el("ul", {
+                dataset: {
+                    form: "dict"
+                }
+            }, [
+                $el("div.lorainfo-sidebar-modal-metadata-liWraper")
+            ]);
+
+            for (let [key, value] of Object.entries(obj)) {
+                const li = $el("li", [
+                    this.createKeySpanforDisplay(key),
+                    this.createColonSpan()
+                ]);
+
+                // Try to transform the string into a object
+                try {
+                    const parsed = JSON.parse(value);
+                    if (parsed && typeof parsed === "object") {
+                        value = parsed;
+                    }
+                } catch (e) {
+                    // Intentionally ignored
+                }
+
+                if (typeof value === 'object' && value !== null) {
+                    li.appendChild(this.JSON2ListforDisplay(value));
+                } else {
+                    li.appendChild(this.createValueSpanforDisplay(value));
+                }
+
+                ul.children[0].appendChild(li);
+            }
             
             return ul;
         }

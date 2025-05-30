@@ -35,13 +35,19 @@ If ComfyUI Manager is already installed
 
 <br>
 
-- You can edit the JSON file like this:
+- You can edit the JSON file like this :
 
 ![Preview](readme_img/02.png)
 
 <br>
 
 ## Change Log
+- 1.2.2
+  - Fix the JPG preview loading issue
+  - Add settings to allow changing the font size of metadata and JSON
+  - Select all text when you focus on a key or value
+  - Add placeholders for the key and value fields
+  - Files that start with . or ._ are now ignored
 - 1.2.1
   - Support for rgthree's JSON file
   - Add a toggle button to show/hide items

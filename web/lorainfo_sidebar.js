@@ -2,10 +2,19 @@ import { app } from "../../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 import { $el } from "../../../scripts/ui.js";
 
+import * as lorainfo_sidebar_error from "./lorainfo_sidebar_error.js";
+
+const DEFAULT_MODELSPEC_FONTSIZE = 12;
+const DEFAULT_JSON_FONTSIZE = 12;
+
 class LoRAInfo_SideBar {
     constructor(app) {
         this.app = app;
 
+        // Get settings
+        this.modelspecFontsize = this.getSettingValue("LoRAInfo_SideBar.ModelspecFontsize", DEFAULT_MODELSPEC_FONTSIZE);
+        this.JSONFontsize = this.getSettingValue("LoRAInfo_SideBar.JSONFontsize", DEFAULT_JSON_FONTSIZE);
+        
         // Dict for JSON editing
         this.keyIndex = 0;
         this.keyDict = {};
@@ -43,6 +52,10 @@ class LoRAInfo_SideBar {
 
         // Load a sidebar
         this.loadLoRAGallery();
+
+        // Apply settings
+        this.changeModelspecFontsize(this.modelspecFontsize);
+        this.changeJSONFontsize(this.JSONFontsize);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,8 +243,8 @@ class LoRAInfo_SideBar {
                 return result;
             }
 
-        } catch (error) {
-            console.error("[LoRA Info SideBar - Error: getLoraList]", error);
+        } catch (e) {
+            console.error("[LoRA Info SideBar - Error: getLoraList]", e);
             return null; 
         }
     }
@@ -252,8 +265,8 @@ class LoRAInfo_SideBar {
                 return {"content": data["img_content"], "ext": data["img_ext"]};
             }
 
-        } catch (error) {
-            console.error("[LoRA Info SideBar - Error: getLoraPreview]", error);
+        } catch (e) {
+            console.error("[LoRA Info SideBar - Error: getLoraPreview]", e);
             return null; 
         }
     }
@@ -420,12 +433,15 @@ class LoRAInfo_SideBar {
             }
             json_info["json_data"] = this.convertNumericStrings(this.list2JSON(copiedContainer.children[0]));
         } catch (e) {
-            console.error("[LoRA Info SideBar - Error: saveCustomJSON]", e);
-            alert("[Custom Node: lorainfo-sidebar]\n⚠ Duplicated Key");
+            if (e instanceof lorainfo_sidebar_error.DuplicatedKeyError) {
+                alert("[Custom Node: lorainfo-sidebar]\n⚠ Duplicated Key");
+            } else if (e instanceof lorainfo_sidebar_error.EmptyKeyError) {
+                alert("[Custom Node: lorainfo-sidebar]\n⚠ Empty Key");
+            } else if (e instanceof lorainfo_sidebar_error.EmptyValueError) {
+                alert("[Custom Node: lorainfo-sidebar]\n⚠ Empty Value");
+            }
             return;
         }
-
-        console.log(json_info);
 
         try {
             // Send a post request
@@ -449,8 +465,8 @@ class LoRAInfo_SideBar {
                 console.error("[LoRA Info SideBar - Error: saveCustomJSON] request was sent but failed");
             }
 
-        } catch (error) {
-            console.error("[LoRA Info SideBar - Error: saveCustomJSON]", error);
+        } catch (e) {
+            console.error("[LoRA Info SideBar - Error: saveCustomJSON]", e);
         }
     }
 
@@ -472,7 +488,7 @@ class LoRAInfo_SideBar {
 
     list2JSON(ul) {
         const formType = ul.dataset.form;
-        const liList = Array.from(ul.querySelectorAll(":scope > .lorainfo-sidebar-modal-custom-JSON-content-liWraper > li"));
+        const liList = Array.from(ul.querySelectorAll(":scope > .lorainfo-sidebar-modal-JSON-content-liWraper > li"));
         liList.pop(); // remove dropdown menu
 
         if (formType === "arr") {
@@ -494,17 +510,27 @@ class LoRAInfo_SideBar {
             const seenKeys = new Set();
 
             for (const li of liList) {
-                const key = li.querySelector('.lorainfo-sidebar-modal-custom-JSON-content-key').textContent.trim();
+                const key = li.querySelector('.lorainfo-sidebar-modal-JSON-content-key').textContent.trim();
+
+                if (key === "") {
+                    throw new lorainfo_sidebar_error.EmptyKeyError("[list2JSON] Empty Key");
+                }
 
                 if (seenKeys.has(key)) {
-                    throw new Error("[list2JSON] Duplicated Key");
+                    throw new lorainfo_sidebar_error.DuplicatedKeyError("[list2JSON] Duplicated Key");
                 }
 
                 const nestedUl = li.querySelector("ul");
                 if (nestedUl) {
                     result[key] = this.list2JSON(nestedUl);
                 } else {
-                    result[key] = li.querySelector('.lorainfo-sidebar-modal-custom-JSON-content-value').textContent.trim();
+                    const value = li.querySelector('.lorainfo-sidebar-modal-JSON-content-value').textContent.trim();
+
+                    if (value === "") {
+                        throw new lorainfo_sidebar_error.EmptyValueError("[list2JSON] Empty Value");
+                    }
+
+                    result[key] = value;
                 }
 
                 seenKeys.add(key);
@@ -754,12 +780,22 @@ class LoRAInfo_SideBar {
         obj.addEventListener("paste", stop, true);
     }
 
+    selectAllforSpan(obj) {
+        const range = document.createRange();
+        range.selectNodeContents(obj);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
     createKeySpanforEdit(str, index) {
-        const keySpan = $el("span.lorainfo-sidebar-modal-custom-JSON-content-key", {
-            innerHTML: str === undefined ? "insert your key" : str,
+        const keySpan = $el("span.lorainfo-sidebar-modal-JSON-content-key", {
+            innerHTML: str === undefined ? "" : str,
             dataset: {
-                index: index
-            }
+                index: index,
+                placeholder: "insert your key"
+            },
+            onfocus: (e) => this.selectAllforSpan(e.target)
         });
         this.convertEditable(keySpan);
         this.preventPropagation(keySpan);
@@ -781,11 +817,13 @@ class LoRAInfo_SideBar {
     }
 
     createValueSpanforEdit(str, index) {
-        const valueContent = $el("span.lorainfo-sidebar-modal-custom-JSON-content-value", {
-            innerHTML: str === undefined ? "insert your value" : str,
+        const valueContent = $el("span.lorainfo-sidebar-modal-JSON-content-value", {
+            innerHTML: str === undefined ? "" : str,
             dataset: {
-                index: index
-            }
+                index: index,
+                placeholder: "insert your value"
+            },
+            onfocus: (e) => this.selectAllforSpan(e.target)
         });
 
         this.convertEditable(valueContent);
@@ -830,7 +868,7 @@ class LoRAInfo_SideBar {
                         form: "arr"
                     }
                 }, [
-                    $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
+                    $el("div.lorainfo-sidebar-modal-JSON-content-liWraper", [
                         $el("li", [
                             this.createToggleButton(),
                             this.createDeleteButton(),
@@ -851,7 +889,7 @@ class LoRAInfo_SideBar {
             const li = $el("li", [
                 this.createToggleButton(),
                 this.createDeleteButton(),
-                this.createKeySpanforEdit("insert your key1", this.keyIndex++),
+                this.createKeySpanforEdit(undefined, this.keyIndex++),
                 this.createColonSpan(),
                 $el("br"),
                 $el("ul", {
@@ -859,11 +897,11 @@ class LoRAInfo_SideBar {
                         form: "dict"
                     }
                 }, [
-                    $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
+                    $el("div.lorainfo-sidebar-modal-JSON-content-liWraper", [
                         $el("li", [
                             this.createToggleButton(),
                             this.createDeleteButton(),
-                            this.createKeySpanforEdit("insert your key2", this.keyIndex++),
+                            this.createKeySpanforEdit(undefined, this.keyIndex++),
                             this.createColonSpan(),
                             $el("br"),
                             this.createValueSpanforEdit(undefined, this.valueIndex++)
@@ -903,7 +941,7 @@ class LoRAInfo_SideBar {
                         form: "arr"
                     }
                 }, [
-                    $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
+                    $el("div.lorainfo-sidebar-modal-JSON-content-liWraper", [
                         $el("li", [
                             this.createToggleButton(),
                             this.createDeleteButton(),
@@ -926,7 +964,7 @@ class LoRAInfo_SideBar {
                         form: "dict"
                     }
                 }, [
-                    $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
+                    $el("div.lorainfo-sidebar-modal-JSON-content-liWraper", [
                         $el("li", [
                             this.createToggleButton(),
                             this.createDeleteButton(),
@@ -958,7 +996,7 @@ class LoRAInfo_SideBar {
                     form: "arr"
                 }
             }, [
-                $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
+                $el("div.lorainfo-sidebar-modal-JSON-content-liWraper", [
                     $el("li", [
                         this.createToggleButton(),
                         this.createDeleteButton(),
@@ -987,7 +1025,7 @@ class LoRAInfo_SideBar {
                     form: "dict"
                 }
             }, [
-                $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper", [
+                $el("div.lorainfo-sidebar-modal-JSON-content-liWraper", [
                     $el("li", [
                         this.createToggleButton(),
                         this.createDeleteButton(),
@@ -1131,7 +1169,7 @@ class LoRAInfo_SideBar {
                     form: "arr"
                 }
             }, [
-                $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper")
+                $el("div.lorainfo-sidebar-modal-JSON-content-liWraper")
             ]);
 
             for (const value of obj) {
@@ -1158,7 +1196,7 @@ class LoRAInfo_SideBar {
                     form: "dict"
                 }
             }, [
-                $el("div.lorainfo-sidebar-modal-custom-JSON-content-liWraper")
+                $el("div.lorainfo-sidebar-modal-JSON-content-liWraper")
             ]);
 
             for (const [key, value] of Object.entries(obj)) {
@@ -1256,6 +1294,26 @@ class LoRAInfo_SideBar {
             return ul;
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Event Listeners for user setting
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    getSettingValue(value, defaultValue) {
+        const result = app.extensionManager.setting.get(value);
+        if (result) { return result; } 
+        else { return defaultValue; }
+    }
+
+    changeModelspecFontsize(value) {
+        this.modelspecFontsize = value;
+        document.documentElement.style.setProperty("--lorainfo-sidebar-modal-modelspec-fontsize", `${this.modelspecFontsize}px`);
+    }
+
+    changeJSONFontsize(value) {
+        this.JSONFontsize = value;
+        document.documentElement.style.setProperty("--lorainfo-sidebar-modal-JSON-fontsize", `${this.JSONFontsize}px`);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1263,11 +1321,29 @@ class LoRAInfo_SideBar {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.registerExtension({
-    name: "comfy.LoRAInfo.SideBar",
+    name: "comfy.LoRAInfo_SideBar",
     async setup() {
-        // create tab
-        const LoRAInfo = new LoRAInfo_SideBar(app);
-        app.LoRAInfo = LoRAInfo;
+        // Setting
+        app.ui.settings.addSetting({
+            id: "LoRAInfo_SideBar.ModelspecFontsize",
+            name: "Modelspec Font Size",
+            type: "slider",
+            attrs: { min:8, max:20, step:1 },
+            definition: DEFAULT_MODELSPEC_FONTSIZE,
+            onChange: (newValue, oldValue) => { if (app.LoRAInfo_SideBar) { app.LoRAInfo_SideBar.changeModelspecFontsize(newValue); } }
+        });
+        app.ui.settings.addSetting({
+            id: "LoRAInfo_SideBar.JSONFontsize",
+            name: "JSON Font Size",
+            type: "slider",
+            attrs: { min:8, max:20, step:1 },
+            definition: DEFAULT_JSON_FONTSIZE,
+            onChange: (newValue, oldValue) => { if (app.LoRAInfo_SideBar) { app.LoRAInfo_SideBar.changeJSONFontsize(newValue); } }
+        });
+
+        // Create custom node tab
+        const LoRAInfoSideBar = new LoRAInfo_SideBar(app);
+        app.LoRAInfo_SideBar = LoRAInfoSideBar;
         app.extensionManager.registerSidebarTab({
             id: "LoRAInfo_SideBar",
             icon: "pi pi-th-large",
@@ -1275,8 +1351,8 @@ app.registerExtension({
             tooltip: "LoRA Info",
             type: "custom",
             render: (el) => {
-                el.appendChild(LoRAInfo.element);
+                el.appendChild(LoRAInfoSideBar.element);
             }
         });
-    }, 
+    }
 });

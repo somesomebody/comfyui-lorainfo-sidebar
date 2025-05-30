@@ -43,23 +43,21 @@ async def get_lora_preview(request) :
         "img_ext": None
     }
     img_exists = False
-    img_exts = [".jpg", ".jpeg", ".png", ".webp"]
+    img_exts = [".JPG", ".JPEG", ".PNG", ".WEBP"]
 
     # Split path of dir and file
-    dir_path, filename_with_ext = os.path.split(requested_path)
+    dir_path, target_filename_with_ext = os.path.split(requested_path)
     # Split file's name and extension
-    filename, ext_safetensors = os.path.splitext(filename_with_ext)
+    target_filename, ext_safetensors = os.path.splitext(target_filename_with_ext)
 
     for ext in img_exts :
-        if os.path.exists(os.path.join(dir_path, filename + ext)) :
-            img_exists = True
-            lora_info["img_content"] = resize_and_encode_image(os.path.join(dir_path, filename + ext), ext[1:])
-            lora_info["img_ext"] = ext[1:]
-            break
+        for actual_file in os.listdir(dir_path):
+            if actual_file.lower() == (target_filename + ext).lower() :
+                img_exists = True
+                lora_info["img_content"], lora_info["img_ext"] = resize_and_encode_image(os.path.join(dir_path, actual_file), ext)
 
     if img_exists == False :
-        lora_info["img_content"] = resize_and_encode_image(os.path.dirname(__file__) + "\\img\\no_preview_img.png", "png")
-        lora_info["img_ext"] = "png"
+        lora_info["img_content"], lora_info["img_ext"] = resize_and_encode_image(os.path.dirname(__file__) + "\\img\\no_preview_img.PNG", ".PNG")
 
     return web.json_response(lora_info)
 
@@ -84,10 +82,14 @@ def resize_and_encode_image(path, ext) :
         right = min(center_x + 100, target_width)
         cropped_img = img.crop((left, 0, right, target_height))
 
+        # Convert the extension to a supported format
+        if (ext == ".JPG") :
+            ext = ".JPEG"
+
         # Convert the image to a base64 string and return it
         buffer = io.BytesIO()
-        cropped_img.save(buffer, format=ext)
-        return base64.b64encode(buffer.getvalue()).decode('utf-8')
+        cropped_img.save(buffer, format=ext[1:])
+        return (base64.b64encode(buffer.getvalue()).decode('utf-8'), ext[1:])
 
 # Returns the LoRA metadata and JSON data
 @PromptServer.instance.routes.get("/lorainfo_sidebar/get_lora_json/{requested_path}")

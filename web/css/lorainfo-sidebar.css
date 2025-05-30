@@ -1,3 +1,10 @@
+:root {
+    --lorainfo-sidebar-modal-modelspec-fontsize: 12px;
+    --lorainfo-sidebar-modal-JSON-fontsize: 12px;
+}
+
+
+
 .sidebar-content-container::-webkit-scrollbar {
     width: 8px; 
 }
@@ -241,7 +248,14 @@
 
 .lorainfo-sidebar-modal-modelspec {
     align-self: flex-start;
-    font-size: 12px;
+    font-size: var(--lorainfo-sidebar-modal-modelspec-fontsize);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.lorainfo-sidebar-modal-modelspec > span {
+    display: inline-block;
+    word-break: break-word;
 }
 
 .lorainfo-sidebar-modal-modelspec-details > summary {
@@ -342,7 +356,7 @@
 .lorainfo-sidebar-modal-rgthree-JSON-content-container {
     background-color: #202020;
     border-radius: 10px;
-    font-size: 12px;
+    font-size: var(--lorainfo-sidebar-modal-JSON-fontsize);
 }
 
 .lorainfo-sidebar-modal-metadata-container ul,
@@ -359,7 +373,7 @@
 }
 
 .lorainfo-sidebar-modal-metadata-liWraper, 
-.lorainfo-sidebar-modal-custom-JSON-content-liWraper {
+.lorainfo-sidebar-modal-JSON-content-liWraper {
     margin: 5px 0px 5px 5px;
     padding: 5px 5px 5px 10px;
     border-left: 3px solid #8f8f8f;
@@ -373,12 +387,17 @@
 }
 
 .lorainfo-sidebar-modal-metadata-key, 
-.lorainfo-sidebar-modal-custom-JSON-content-key {
+.lorainfo-sidebar-modal-JSON-content-key {
     color: #B0E0E6;
 }
 
+.lorainfo-sidebar-modal-JSON-content-key:empty::before {
+    content: attr(data-placeholder);
+    color: #808080;
+}
+
 ul[data-form="arr"] > div > li > span.lorainfo-sidebar-modal-metadata-value, 
-ul[data-form="arr"] > div > li > span.lorainfo-sidebar-modal-custom-JSON-content-value {
+ul[data-form="arr"] > div > li > span.lorainfo-sidebar-modal-JSON-content-value {
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
@@ -396,14 +415,20 @@ span.lorainfo-sidebar-modal-metadata-value {
     -webkit-box-decoration-break: clone;
 }
 
-span.lorainfo-sidebar-modal-custom-JSON-content-value {
+span.lorainfo-sidebar-modal-JSON-content-value {
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
     color: #e2982a;
-    padding: 0px 0px 0px 30px;
+    padding: 0px 0px 0px 20px;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
+}
+
+ul[data-form="arr"] > div > li > span.lorainfo-sidebar-modal-JSON-content-value:empty::before,
+span.lorainfo-sidebar-modal-JSON-content-value:empty::before {
+    content: attr(data-placeholder);
+    color: #808080;
 }
 
 .lorainfo-sidebar-modal-custom-JSON-content-toggle {
